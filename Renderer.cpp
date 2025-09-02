@@ -17,7 +17,37 @@ Renderer::Renderer(HWND hwnd) {
         throw dWriteFactorySucceeded;
     }
 
-    IDWriteTextFormat textFormat = dWriteFactory->CreateTextFormat(L"Arial");
+    IDWriteTextFormat* textFormat = nullptr;
+    HRESULT textFormatSucceeded = dWriteFactory->CreateTextFormat(
+        L"Arial", NULL, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
+        DWRITE_FONT_STRETCH_NORMAL, 72, L"en-us", &textFormat);
+    if (!textFormatSucceeded) {
+        throw textFormatSucceeded;
+    }
+
+    textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+    textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_FAR);
+
+    RECT rect = {0};
+    if (!GetClientRect(hwnd, &rect)) {
+        throw static_cast<HRESULT>(GetLastError());
+    }
+    struct D2D_SIZE_U pixelSize;
+    pixelSize.height = rect.bottom - rect.top;
+    pixelSize.width = rect.right - rect.left;
+
+    struct D2D1_HWND_RENDER_TARGET_PROPERTIES rtProperties;
+    rtProperties.hwnd = hwnd;
+    rtProperties.pixelSize = pixelSize;
+
+    ID2D1HwndRenderTarget* hwndRenderTarget = nullptr;
+    HRESULT rtSucceeded = factory->CreateHwndRenderTarget(
+        D2D1_RENDER_TARGET_PROPERTIES(), rtProperties, &hwndRenderTarget);
+    if (!rtSucceeded) {
+        throw rtSucceeded;
+    }
+
+    auto testBrush = hwndRenderTarget->CreateSolidColorBrush()
 }
 
 HRESULT Renderer::Resize(struct Renderer* renderer, D2D_SIZE_U newSize) noexcept {
