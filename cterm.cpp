@@ -102,6 +102,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
     } break;
+    case WM_SIZE: {
+        Renderer* renderer = reinterpret_cast<Renderer*>(GetWindowLongPtr(hWnd, RENDERER_WND_OFFSET));
+        if (!renderer)
+            return 0;
+        D2D_SIZE_U newSize;
+        newSize.width = static_cast<UINT32>(LOWORD(lParam));
+        newSize.height = static_cast<UINT32>(HIWORD(lParam));
+        renderer->Resize(newSize);
+        break;
+    }
     case WM_PAINT: {
         Renderer* renderer = reinterpret_cast<Renderer*>(GetWindowLongPtr(hWnd, RENDERER_WND_OFFSET));
         if (!renderer)

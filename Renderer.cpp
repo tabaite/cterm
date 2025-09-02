@@ -1,7 +1,7 @@
 #include "Renderer.h"
 #include "winerror.h"
 
-Renderer::Renderer(HWND hwnd) {
+Renderer::Renderer(_In_ HWND hwnd) {
     ID2D1Factory* factory = nullptr;
     HRESULT factorySucceeded = D2D1CreateFactory(
         D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory), NULL,
@@ -68,7 +68,7 @@ Renderer::~Renderer() {
     this->RenderTarget->Release();
 }
 
-HRESULT Renderer::Resize(D2D_SIZE_U newSize) noexcept {
+HRESULT Renderer::Resize(_In_ D2D_SIZE_U newSize) noexcept {
     D2D_RECT_F newRect;
     newRect.bottom = static_cast<FLOAT>(newSize.height);
     newRect.top = 0.0;

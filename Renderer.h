@@ -15,10 +15,10 @@ class Renderer {
     D2D_RECT_F WindowRect;
 
     Renderer() = default;
-	Renderer(HWND hwnd);
+	Renderer(_In_ HWND hwnd);
     ~Renderer();
 
-	HRESULT Resize(D2D_SIZE_U newSize) noexcept;
+	HRESULT Resize(_In_ D2D_SIZE_U newSize) noexcept;
 
 	HRESULT Render() noexcept;
 };
