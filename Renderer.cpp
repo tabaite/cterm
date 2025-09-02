@@ -1,6 +1,9 @@
 #include "Renderer.h"
 #include "winerror.h"
 
+#define TESTING_FONT_SIZE 72
+#define TESTING_FONT_SPACING TESTING_FONT_SIZE
+
 Renderer::Renderer(_In_ HWND hwnd) {
     ID2D1Factory* factory = nullptr;
     HRESULT factorySucceeded = D2D1CreateFactory(
@@ -20,12 +23,13 @@ Renderer::Renderer(_In_ HWND hwnd) {
     IDWriteTextFormat* textFormat = nullptr;
     HRESULT textFormatSucceeded = dWriteFactory->CreateTextFormat(
         L"Arial", NULL, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
-        DWRITE_FONT_STRETCH_NORMAL, 72, L"en-us", &textFormat);
+        DWRITE_FONT_STRETCH_NORMAL, TESTING_FONT_SIZE, L"en-us", &textFormat);
     if (FAILED(textFormatSucceeded)) {
         throw textFormatSucceeded;
     }
 
     textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+    textFormat->SetLineSpacing(DWRITE_LINE_SPACING_METHOD_UNIFORM, TESTING_FONT_SPACING, 0.8*TESTING_FONT_SPACING);
     textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_FAR);
 
     RECT rect = {0};
@@ -68,7 +72,7 @@ Renderer::~Renderer() {
     this->RenderTarget->Release();
 }
 
-HRESULT Renderer::Resize(_In_ D2D_SIZE_U newSize) noexcept {
+HRESULT Renderer::Resize(D2D_SIZE_U newSize) noexcept {
     D2D_RECT_F newRect;
     newRect.bottom = static_cast<FLOAT>(newSize.height);
     newRect.top = 0.0;
@@ -82,7 +86,11 @@ HRESULT Renderer::Resize(_In_ D2D_SIZE_U newSize) noexcept {
 HRESULT Renderer::Render() noexcept {
     this->RenderTarget->BeginDraw();
     this->RenderTarget->Clear(BackgroundColor);
-    this->RenderTarget->DrawTextW(L"who up... jorkin it", 20, this->TextFormat,
-                                  this->WindowRect, this->TextBrush);
+    D2D_RECT_F windowRect = this->WindowRect;
+    for (int i = 0; i < 2; i++) {
+		this->RenderTarget->DrawTextW(L"who up... jorkin it too\nsdfpoewir", 34, this->TextFormat,
+									  &windowRect, this->TextBrush);
+        windowRect.bottom -= 2*TESTING_FONT_SPACING;
+    }
     return this->RenderTarget->EndDraw();
 }
