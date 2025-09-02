@@ -6,14 +6,14 @@ Renderer::Renderer(HWND hwnd) {
     HRESULT factorySucceeded = D2D1CreateFactory(
         D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory), NULL,
         reinterpret_cast<void**>(&factory));
-    if (!factorySucceeded) {
+    if (FAILED(factorySucceeded)) {
         throw factorySucceeded;
     }
     IDWriteFactory* dWriteFactory = nullptr;
     HRESULT dWriteFactorySucceeded = DWriteCreateFactory(
         DWRITE_FACTORY_TYPE_ISOLATED, __uuidof(IDWriteFactory),
         reinterpret_cast<IUnknown**>(&dWriteFactory));
-    if (!dWriteFactorySucceeded) {
+    if (FAILED(dWriteFactorySucceeded)) {
         throw dWriteFactorySucceeded;
     }
 
@@ -21,7 +21,7 @@ Renderer::Renderer(HWND hwnd) {
     HRESULT textFormatSucceeded = dWriteFactory->CreateTextFormat(
         L"Arial", NULL, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
         DWRITE_FONT_STRETCH_NORMAL, 72, L"en-us", &textFormat);
-    if (!textFormatSucceeded) {
+    if (FAILED(textFormatSucceeded)) {
         throw textFormatSucceeded;
     }
 
@@ -32,39 +32,57 @@ Renderer::Renderer(HWND hwnd) {
     if (!GetClientRect(hwnd, &rect)) {
         throw static_cast<HRESULT>(GetLastError());
     }
-    struct D2D_SIZE_U pixelSize;
+    D2D_RECT_F d2dRect;
+    d2dRect.bottom = static_cast<FLOAT>(rect.bottom);
+    d2dRect.top = static_cast<FLOAT>(rect.top);
+    d2dRect.left = static_cast<FLOAT>(rect.left);
+    d2dRect.right = static_cast<FLOAT>(rect.right);
+    D2D_SIZE_U pixelSize;
     pixelSize.height = rect.bottom - rect.top;
     pixelSize.width = rect.right - rect.left;
 
-    struct D2D1_HWND_RENDER_TARGET_PROPERTIES rtProperties;
-    rtProperties.hwnd = hwnd;
-    rtProperties.pixelSize = pixelSize;
-
     ID2D1HwndRenderTarget* hwndRenderTarget = nullptr;
     HRESULT rtSucceeded = factory->CreateHwndRenderTarget(
-        D2D1_RENDER_TARGET_PROPERTIES(), rtProperties, &hwndRenderTarget);
-    if (!rtSucceeded) {
+        D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(hwnd, pixelSize),
+        &hwndRenderTarget);
+    if (FAILED(rtSucceeded)) {
         throw rtSucceeded;
     }
 
-    auto testBrush = hwndRenderTarget->CreateSolidColorBrush()
+    ID2D1SolidColorBrush* testBrush = nullptr;
+    HRESULT testBrushSucceeded =
+        hwndRenderTarget->CreateSolidColorBrush(&TextColor, NULL, &testBrush);
+    if (FAILED(testBrushSucceeded)) {
+        throw testBrushSucceeded;
+    }
+
+    this->RenderTarget = hwndRenderTarget;
+    this->TextBrush = testBrush;
+    this->TextFormat = textFormat;
+    this->WindowRect = d2dRect;
 }
 
-HRESULT Renderer::Resize(struct Renderer* renderer, D2D_SIZE_U newSize) noexcept {
+Renderer::~Renderer() {
+    this->TextFormat->Release();
+    this->TextBrush->Release();
+    this->RenderTarget->Release();
+}
+
+HRESULT Renderer::Resize(D2D_SIZE_U newSize) noexcept {
     D2D_RECT_F newRect;
     newRect.bottom = static_cast<FLOAT>(newSize.height);
     newRect.top = 0.0;
     newRect.right = static_cast<FLOAT>(newSize.width);
     newRect.left = 0.0;
 
-    renderer->WindowRect = newRect;
-    return renderer->RenderTarget->Resize(newSize);
+    this->WindowRect = newRect;
+    return this->RenderTarget->Resize(newSize);
 }
 
-HRESULT Renderer::Render(struct Renderer* renderer) noexcept {
-    renderer->RenderTarget->BeginDraw();
-    renderer->RenderTarget->Clear(BackgroundColor);
-    renderer->RenderTarget->DrawTextW(L"who up... jorkin it", 20, renderer->TextFormat,
-                                  renderer->WindowRect, renderer->TextBrush);
-    return renderer->RenderTarget->EndDraw();
+HRESULT Renderer::Render() noexcept {
+    this->RenderTarget->BeginDraw();
+    this->RenderTarget->Clear(BackgroundColor);
+    this->RenderTarget->DrawTextW(L"who up... jorkin it", 20, this->TextFormat,
+                                  this->WindowRect, this->TextBrush);
+    return this->RenderTarget->EndDraw();
 }

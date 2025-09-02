@@ -1,8 +1,10 @@
 // cterm.cpp : Defines the entry point for the application.
 //
-
 #include "cterm.h"
+#include "Renderer.h"
 #include "framework.h"
+
+#define RENDERER_WND_OFFSET 0
 
 // Global Variables:
 HINSTANCE hInst; // current instance
@@ -28,7 +30,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = WndProc;
     wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
+    wcex.cbWndExtra = sizeof(Renderer) + sizeof(uintptr_t);
     wcex.hInstance = hInstance;
     wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CTERM));
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -44,10 +46,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HWND hWnd =
         CreateWindowW(ClassName, Title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0,
                       CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
     if (!hWnd) {
         return FALSE;
     }
+
+    Renderer renderer(hWnd);
+
+    SetWindowLongPtr(hWnd, RENDERER_WND_OFFSET,
+                      reinterpret_cast<LONG_PTR>(&renderer));
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
@@ -91,10 +97,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
         }
     } break;
     case WM_PAINT: {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hWnd, &ps);
-        // TODO: Add any drawing code that uses hdc here...
-        EndPaint(hWnd, &ps);
+        Renderer* renderer = reinterpret_cast<Renderer*>(GetWindowLongPtr(hWnd, RENDERER_WND_OFFSET));
+        if (!renderer)
+            return 0;
+        renderer->Render();
     } break;
     case WM_DESTROY:
         PostQuitMessage(0);
