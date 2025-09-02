@@ -1,4 +1,4 @@
-#include "cterm.h"
+#include "resource.h"
 #include "Renderer.h"
 #include "targetver.h"
 #define WIN32_LEAN_AND_MEAN
