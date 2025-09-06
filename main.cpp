@@ -84,6 +84,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
     } break;
+    case WM_CHAR: {
+        // yeah
+        break;
+    }
     case WM_SIZE: {
         Renderer* renderer = reinterpret_cast<Renderer*>(GetWindowLongPtr(hWnd, RENDERER_WND_OFFSET));
         if (!renderer)

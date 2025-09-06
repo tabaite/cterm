@@ -11,5 +11,4 @@ class TextBuffer {
 
     TextBuffer(_Inout_ wchar_t* start);
     void PushString(_In_ wchar_t* string, uint32_t len);
-    void CopyIntoContiguousBuffer(_Inout_ wchar_t* buffer, uint32_t len);
 };

@@ -1,7 +1,7 @@
 #include "Renderer.h"
 #include "winerror.h"
 
-#define TESTING_FONT_SIZE 72
+#define TESTING_FONT_SIZE 36
 #define TESTING_FONT_SPACING TESTING_FONT_SIZE
 
 Renderer::Renderer(_In_ HWND hwnd) {
@@ -87,6 +87,10 @@ HRESULT Renderer::Render() noexcept {
     this->RenderTarget->BeginDraw();
     this->RenderTarget->Clear(BackgroundColor);
     D2D_RECT_F windowRect = this->WindowRect;
+
+    // Because our text buffer is circular, it could end up in a state where it is divided into 2 sections.
+    // This example code shows drawing those 2 sections nicely. This will work for the actual buffer too,
+    // as we always divide the 2 sections by a newline.
     for (int i = 0; i < 2; i++) {
 		this->RenderTarget->DrawTextW(L"who up... jorkin it too\nsdfpoewir", 34, this->TextFormat,
 									  &windowRect, this->TextBrush);
