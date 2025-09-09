@@ -1,14 +1,14 @@
 #pragma once
-#include <cstdint>
+#include <sal.h>
 
-#define TEXT_BUFFER_SIZE 16777216
+constexpr int TEXT_BUFFER_SIZE = 16777216;
 
 class TextBuffer {
   public:
     wchar_t* BufferStart;
-    unsigned int StartIndex : 24;
-    unsigned int EndIndex : 24;
+    int WriteIndex;
+    int ReadIndex;
 
-    TextBuffer(_Inout_ wchar_t* start);
-    void PushString(_In_ wchar_t* string, uint32_t len);
+    TextBuffer(_Inout_ wchar_t* start) noexcept;
+    void PushString(_In_ wchar_t* string, int len) noexcept;
 };
