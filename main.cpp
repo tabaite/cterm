@@ -90,7 +90,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
         SessionState* session = reinterpret_cast<SessionState*>(GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
         if (!session)
             return 0;
-        session->Buffer.PushString(const_cast<wchar_t*>(L"oooh im jorkin it\n"), 18);
+
+        wchar_t c = static_cast<wchar_t>(wParam);
+        session->Buffer.PushString(&c, 1);
         break;
     }
     case WM_SIZE: {
