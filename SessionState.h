@@ -1,6 +1,11 @@
 #pragma once
 #include "TextBuffer.h"
+#include "Renderer.h"
 
 class SessionState {
-    TextBuffer buffer;
+  public:
+    Renderer Renderer;
+    TextBuffer Buffer;
+
+    SessionState(HWND hwnd, wchar_t* buffer);
 };

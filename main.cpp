@@ -1,5 +1,5 @@
 #include "resource.h"
-#include "Renderer.h"
+#include "SessionState.h"
 #include "targetver.h"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -8,7 +8,7 @@
 #include <memory.h>
 #include <tchar.h>
 
-#define RENDERER_WND_OFFSET 0
+constexpr int SESSION_WND_OFFSET = 0;
 
 HINSTANCE hInst;
 
@@ -50,10 +50,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    Renderer renderer(hWnd);
+    wchar_t* sessionBuffer = reinterpret_cast<wchar_t*>(malloc(TEXT_BUFFER_SIZE));
 
-    SetWindowLongPtr(hWnd, RENDERER_WND_OFFSET,
-                      reinterpret_cast<LONG_PTR>(&renderer));
+    SessionState session(hWnd, sessionBuffer);
+
+    SetWindowLongPtr(hWnd, SESSION_WND_OFFSET,
+                      reinterpret_cast<LONG_PTR>(&session));
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
@@ -85,24 +87,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
         }
     } break;
     case WM_CHAR: {
-        // yeah
+        SessionState* session = reinterpret_cast<SessionState*>(GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
+        if (!session)
+            return 0;
+        session->Buffer.PushString(const_cast<wchar_t*>(L"oooh im jorkin it\n"), 18);
         break;
     }
     case WM_SIZE: {
-        Renderer* renderer = reinterpret_cast<Renderer*>(GetWindowLongPtr(hWnd, RENDERER_WND_OFFSET));
-        if (!renderer)
+        SessionState* session = reinterpret_cast<SessionState*>(GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
+        if (!session)
             return 0;
         D2D_SIZE_U newSize;
         newSize.width = static_cast<UINT32>(LOWORD(lParam));
         newSize.height = static_cast<UINT32>(HIWORD(lParam));
-        renderer->Resize(newSize);
+        session->Renderer.Resize(newSize);
         break;
     }
     case WM_PAINT: {
-        Renderer* renderer = reinterpret_cast<Renderer*>(GetWindowLongPtr(hWnd, RENDERER_WND_OFFSET));
-        if (!renderer)
+        SessionState* session = reinterpret_cast<SessionState*>(GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
+        if (!session)
             return 0;
-        renderer->Render();
+        session->Renderer.Render(session->Buffer);
     } break;
     case WM_DESTROY:
         PostQuitMessage(0);

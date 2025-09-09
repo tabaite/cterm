@@ -83,18 +83,23 @@ HRESULT Renderer::Resize(D2D_SIZE_U newSize) noexcept {
     return this->RenderTarget->Resize(newSize);
 }
 
-HRESULT Renderer::Render() noexcept {
+HRESULT Renderer::Render(TextBuffer buffer) noexcept {
     this->RenderTarget->BeginDraw();
     this->RenderTarget->Clear(BackgroundColor);
     D2D_RECT_F windowRect = this->WindowRect;
 
     // Because our text buffer is circular, it could end up in a state where it is divided into 2 sections.
     // This example code shows drawing those 2 sections nicely. This will work for the actual buffer too,
-    // as we always divide the 2 sections by a newline.
-    for (int i = 0; i < 2; i++) {
-		this->RenderTarget->DrawTextW(L"who up... jorkin it too\nsdfpoewir", 34, this->TextFormat,
-									  &windowRect, this->TextBrush);
-        windowRect.bottom -= 2*TESTING_FONT_SPACING;
-    }
+    // as we (not yet) always divide the 2 sections by a newline.
+
+	this->RenderTarget->DrawTextW(buffer.BufferStart, buffer.WriteIndex, this->TextFormat,
+								  &windowRect, this->TextBrush);
+	windowRect.bottom -= 2*TESTING_FONT_SPACING;
+
+    const int remainingWriteLength = TEXT_BUFFER_SIZE - buffer.WriteIndex;
+	const int unusedSpace = TEXT_BUFFER_SIZE - buffer.Used;
+	this->RenderTarget->DrawTextW(buffer.BufferStart + buffer.WriteIndex, remainingWriteLength - unusedSpace, this->TextFormat,
+								  &windowRect, this->TextBrush);
+
     return this->RenderTarget->EndDraw();
 }

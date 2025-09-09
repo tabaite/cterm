@@ -1,4 +1,5 @@
 #pragma once
+#include "TextBuffer.h"
 #include <windows.h>
 #include <d2d1.h>
 #include <dwrite.h>
@@ -20,6 +21,6 @@ class Renderer {
 
 	HRESULT Resize(_In_ D2D_SIZE_U newSize) noexcept;
 
-	HRESULT Render() noexcept;
+	HRESULT Render(TextBuffer buffer) noexcept;
 };
 
