@@ -1,6 +1,11 @@
 #pragma once
-constexpr int INPUT_BUFFER_SIZE = 8192;
+constexpr int INPUT_BUFFER_SIZE = 4096;
 
 class CommandInputBuffer {
-    wchar_t Buffer[8192];
+  public:
+    wchar_t* Buffer;
+    int CursorPosition;
+    int Used;
+
+    CommandInputBuffer(wchar_t* buffer) noexcept;
 };
