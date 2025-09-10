@@ -124,6 +124,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CommandInputBuffer.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SessionState.h" />
@@ -131,6 +132,7 @@
     <ClInclude Include="TextBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CommandInputBuffer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SessionState.cpp" />
