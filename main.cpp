@@ -1,12 +1,12 @@
-#include "resource.h"
 #include "SessionState.h"
+#include "resource.h"
 #include "targetver.h"
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
+#include <stdlib.h>
 #include <tchar.h>
+#include <windows.h>
 
 constexpr int SESSION_WND_OFFSET = 0;
 
@@ -50,12 +50,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    wchar_t* sessionBuffer = reinterpret_cast<wchar_t*>(malloc(TEXT_BUFFER_SIZE));
+    wchar_t* sessionBuffer =
+        reinterpret_cast<wchar_t*>(malloc(TEXT_BUFFER_SIZE));
 
     SessionState session(hWnd, sessionBuffer);
 
     SetWindowLongPtr(hWnd, SESSION_WND_OFFSET,
-                      reinterpret_cast<LONG_PTR>(&session));
+                     reinterpret_cast<LONG_PTR>(&session));
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
@@ -87,15 +88,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
         }
     } break;
     case WM_KEYDOWN: {
-        SessionState* session = reinterpret_cast<SessionState*>(GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
+        SessionState* session = reinterpret_cast<SessionState*>(
+            GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
         if (!session)
             return 0;
 
-        session->Buffer.PushString(const_cast<wchar_t*>(L"jorker"), 1);
+        BYTE keyState[256] = {0};
+        if (!GetKeyboardState(keyState)) {
+            return 0;
+        }
+        keyState[VK_CONTROL] = 0;
+        keyState[VK_MENU] = 0;
+        keyState[VK_LCONTROL] = 0;
+        keyState[VK_LMENU] = 0;
+        keyState[VK_RCONTROL] = 0;
+        keyState[VK_RMENU] = 0;
+
+        wchar_t outKeyBuffer[2] = {0, 0};
+        UINT scanCode = (lParam >> 16) & 0xFF;
+        int len = ToUnicode(wParam, scanCode, keyState, outKeyBuffer, 2, 0);
+
+        session->Buffer.PushString(outKeyBuffer, len);
         break;
     }
     case WM_SIZE: {
-        SessionState* session = reinterpret_cast<SessionState*>(GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
+        SessionState* session = reinterpret_cast<SessionState*>(
+            GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
         if (!session)
             return 0;
         D2D_SIZE_U newSize;
@@ -105,7 +123,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
         break;
     }
     case WM_PAINT: {
-        SessionState* session = reinterpret_cast<SessionState*>(GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
+        SessionState* session = reinterpret_cast<SessionState*>(
+            GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
         if (!session)
             return 0;
         session->Renderer.Render(session->Buffer);
