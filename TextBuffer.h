@@ -3,6 +3,7 @@
 
 constexpr int TEXT_BUFFER_SIZE = 16777216;
 
+// Read-only text buffer, to store stdout/stderr history.
 class TextBuffer {
   public:
     wchar_t* BufferStart;

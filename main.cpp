@@ -86,13 +86,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
     } break;
-    case WM_CHAR: {
+    case WM_KEYDOWN: {
         SessionState* session = reinterpret_cast<SessionState*>(GetWindowLongPtr(hWnd, SESSION_WND_OFFSET));
         if (!session)
             return 0;
 
-        wchar_t c = static_cast<wchar_t>(wParam);
-        session->Buffer.PushString(&c, 1);
+        session->Buffer.PushString(const_cast<wchar_t*>(L"jorker"), 1);
         break;
     }
     case WM_SIZE: {
